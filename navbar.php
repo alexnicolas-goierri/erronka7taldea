@@ -15,9 +15,9 @@
                 <input type="text" name="keywords" placeholder="Bilatu produktuak..." />
                 <button type="submit" name="search" value="1" >BILATU</button>
             </form>
-               <a href="KATALOGOA.php">KATALO</a>
+               <a href="KATALOGOA.php">KATALOGOA</a>
             <a href="SARRERA.php">SARRERA</a>
-              <a href="HASI SAIOA.php">HASI SAIOA</a>
+              <a href="HASI SAIOA.php">HASI SAIO</a>
             <a href="IZENA EMAN.php">FORMULARIOA</a>
             <img src="img/Reino Unido.jpg"  class="Ingles"alt="English logo">
             <a href="karritoa.php"><img src="img/saskia.png" alt="" height="50%" width="50%" class="saskia"></a>
