@@ -76,14 +76,10 @@ if (!empty($params)) {
 
 <script>
 $(document).ready(function(){
-    $(".slider").slick({
-        centerMode: true,
-        centerPadding: "60px",
+    $('.slider').slick({
         slidesToShow: 3,
-        responsive: [
-            { breakpoint: 768, settings: { arrows: false, centerMode: true, centerPadding: "40px", slidesToShow: 3 }},
-            { breakpoint: 480, settings: { arrows: false, centerMode: true, centerPadding: "40px", slidesToShow: 1 }}
-        ]
+        slidesToScroll: 1,
+        autoplay: true,
     });
 
     $(".erosi").click(function(){
@@ -98,7 +94,6 @@ $(document).ready(function(){
 });
 </script>
 
-<!-- SLIDER -->
 <div class="slider">
     <img src="img/slider-argazkiak/1.jpg">
     <img src="img/slider-argazkiak/2.jpg">
@@ -106,7 +101,6 @@ $(document).ready(function(){
     <img src="img/slider-argazkiak/4.webp">
 </div>
 
-<!-- FILTRO -->
 <form method="GET">
     <label>Mota</label>
     <select name="mota">
