@@ -1,61 +1,118 @@
+<?php
+session_start();
+include_once "konexioa.php"; 
+
+$mensaje = "";
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $aukera = $_POST["Aukera"]; // Bezeroa o Hornitzailea
+    $email = $_POST["posta_elektronikoa"];
+    $pasahitza = $_POST["pasahitza"];
+    
+    // Validar que el email no exista ya en erabiltzaile
+    $check_sql = "SELECT id FROM erabiltzaile WHERE gmail = ?";
+    $check_stmt = $conexion->prepare($check_sql);
+    $check_stmt->bind_param("s", $email);
+    $check_stmt->execute();
+    $check_result = $check_stmt->get_result();
+    
+    if ($check_result->num_rows > 0) {
+        $mensaje = "Posta elektroniko hau dagoeneko erregistratuta dago.";
+    } else {
+        
+        $conexion->begin_transaction();
+        
+        try {
+            if ($aukera === "Bezeroa") {
+                $izena = $_POST["izena"];
+                $abizena = $_POST["abizena"];
+                
+                // 1. Insertar en tabla bezero
+                $sql_bezero = "INSERT INTO bezero (izena, abizena, gmail, pasahitza, NAN) VALUES (?, ?, ?, ?, 'PENDIENTE')";
+                $stmt_bezero = $conexion->prepare($sql_bezero);
+                $stmt_bezero->bind_param("ssss", $izena, $abizena, $email, $pasahitza);
+                $stmt_bezero->execute();
+                
+                $bezero_id = $conexion->insert_id;
+                
+                // 2. Insertar en tabla erabiltzaile (rol_id = 5 es Bezeroa según tu tabla rolak)
+                $sql_erab = "INSERT INTO erabiltzaile (gmail, pass, bezero_id, rol_id) VALUES (?, ?, ?, 5)";
+                $stmt_erab = $conexion->prepare($sql_erab);
+                $stmt_erab->bind_param("ssi", $email, $pasahitza, $bezero_id);
+                $stmt_erab->execute();
+                
+            } else if ($aukera === "Hornitzailea") {
+                $enpresa = $_POST["enpresaren_izena"];
+                $telefonoa = $_POST["telefonoa"];
+                
+                // 1. Insertar en tabla hornitzaile
+                $sql_horn = "INSERT INTO hornitzaile (enpreza_izena, telefono, gmail) VALUES (?, ?, ?)";
+                $stmt_horn = $conexion->prepare($sql_horn);
+                $stmt_horn->bind_param("sss", $enpresa, $telefonoa, $email);
+                $stmt_horn->execute();
+                
+                $hornitzaile_id = $conexion->insert_id;
+                
+                // 2. Insertar en tabla erabiltzaile (necesitas definir qué rol_id es para hornitzaile)
+                // Por ahora usaré NULL, pero deberías tener un rol específico
+                $sql_erab = "INSERT INTO erabiltzaile (gmail, pass, hornitzaile_id, rol_id) VALUES (?, ?, ?, 1)";
+                $stmt_erab = $conexion->prepare($sql_erab);
+                $stmt_erab->bind_param("ssi", $email, $pasahitza, $hornitzaile_id);
+                $stmt_erab->execute();
+            }
+            
+            $conexion->commit();
+            $mensaje = "Erabiltzailea arrakastaz sortu da!";
+            
+            // Opcional: redirigir al login después de 2 segundos
+            // header("refresh:2;url=login.php");
+            
+        } catch (Exception $e) {
+            $conexion->rollback();
+            $mensaje = "Errorea: " . $e->getMessage();
+        }
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="eu">
 <head>
     <meta charset="utf-8">
-    <title>Login</title>
+    <title>Izena Eman</title>
     <link rel="stylesheet" href="CSS_Erronka.css" />
     <link rel="icon" type="image/png" href="SECONDS AGO LOGO.png"/>
 </head>
 <body>
    <header>
-        <?php
-        include_once "navbar.php"
-        ?>
+        <?php include_once "navbar.php"; ?>
     </header> 
     <main>
-        <form method="post">
-            <div>
-                <label for="bezeroa">Bezeroa</label>
-                <input type="radio" name="Aukera"  value="Bezeroa" class="mota" required >
-                <label for="hornitzailea">Hornitzailea</label>
-                <input type="radio"  name="Aukera" value="Hornitzailea" class="mota" >
-                
-            </div>
-            <div>
-                <label for="izena">Izena</label>
-                <input type="text" id="izena"  required disabled>
-            </div>
-            <div>
-                <label for="abizena">Abizena</label>
-                <input type="text" id="abizena" required disabled>
-            </div>
-              <div>
-                <label for="enpresaren izena">Enpresaren izena</label>
-                <input type="text" id="enpresaren_izena" required disabled>
-            </div>
-                <div>
-                <label for="telefonoa">Telefonoa</label>
-                <input type="tel" id="telefonoa"  placeholder="+34 688 452 317" required disabled>          
-            </div>
-            <div>
-                <label for="kokapena">Kokapena</label>
-                <input type="text" name="kokapena" id="kokapena" required disabled>
-            </div>
+      <?php if($mensaje) echo "<div class='mensaje'>$mensaje</div>"; ?>
+      
+      <form method="post">
 
-            <div>
-                <label for="posta elektronikoa">Posta elektronikoa</label>
-                <input type="email" id="posta_elektronikoa" placeholder="example@gmail.com" required disabled>
-            </div>
-            <div>
-                <label for="pasahitza">Pasahitza</label>
-                <input type="password" name="pasahitza" id="pasahitza" required disabled>
-            </div>
-            <div>
-                <button type="reset">Ezabatu</button disabled>
-                <button type="submit">Sortu</button disabled>
-                
-            </div>
-        </form>
+<label>Bezeroa</label>
+<input type="radio" name="Aukera" value="Bezeroa" required>
+
+<label>Hornitzailea</label>
+<input type="radio" name="Aukera" value="Hornitzailea">
+
+<input type="text" name="izena" id="izena" placeholder="Izena">
+<input type="text" name="abizena" id="abizena" placeholder="Abizena">
+
+<input type="text" name="enpresaren_izena" id="enpresaren_izena" placeholder="Empresa">
+
+<input type="tel" name="telefonoa" id="telefonoa" placeholder="+34...">
+
+<input type="email" name="posta_elektronikoa" id="posta_elektronikoa" placeholder="example@gmail.com" required>
+<input type="password" name="pasahitza" id="pasahitza" required>
+
+<button type="reset">Ezabatu</button>
+<button type="submit">Sortu</button>
+
+</form>
+
     </main>
     <footer>
     <h3>ENPRESA KOLABORATIBOAK</h3>
@@ -86,51 +143,33 @@
         </div>
     </footer>
     <script>
-    //  ROLAK bilatu (radio botoiak: Bezeroa / Hornitzailea)
     const rolAukerak = document.querySelectorAll('input[name="Aukera"]');
-
-    // Formulario guztiko input-ak hartu
-    // (text, email, tel, number, reset, submit)
     const eremuGuztiak = document.querySelectorAll(
-      'input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="reset"], input[type="submit"]'
+      'input[type="text"], input[type="email"], input[type="tel"]'
     );
 
-    // Funtzioa: eremu guztiak desgaitzeko
     function desgaituDenak() {
       eremuGuztiak.forEach(e => e.disabled = true);
     }
 
-    // Hasieran dena desgaituta (ezin da ezer idatzi)
     desgaituDenak();
 
-    // Erabiltzaileak rola hautatzen duenean (radio bat aldatzean)
     rolAukerak.forEach(aukera => {
       aukera.addEventListener('change', () => {
-
-        //  Lehenik, dena berriro desgaitu
         desgaituDenak();
 
-        //  Aukeratutakoaren arabera aktibatu dagokion multzoa
         if (aukera.value === 'Bezeroa') {
-          //  Bezeroa hautatzean: honako eremuak aktibatzen dira
           document.getElementById('izena').disabled = false;
           document.getElementById('abizena').disabled = false;
           document.getElementById('posta_elektronikoa').disabled = false;
           document.getElementById('pasahitza').disabled = false;
-          document.querySelector('input[type="reset"]').disabled = false;
-          document.querySelector('input[type="submit"]').disabled = false;
         } 
         else if (aukera.value === 'Hornitzailea') {
-          // Hornitzailea hautatzean: honako eremuak aktibatzen dira
           document.getElementById('enpresaren_izena').disabled = false;
           document.getElementById('telefonoa').disabled = false;
-          document.getElementById('kokapena').disabled = false;
           document.getElementById('posta_elektronikoa').disabled = false;
           document.getElementById('pasahitza').disabled = false;
-          document.querySelector('input[type="reset"]').disabled = false;
-          document.querySelector('input[type="submit"]').disabled = false;
         }
-    
       });
     });
   </script>

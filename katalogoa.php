@@ -43,10 +43,17 @@ if ($mota !== '') {
 }
 
 if (!empty($params)) {
+
     $stmt = $conexion->prepare($sql);
+
+    if (!$stmt) {
+        die("SQL errorea: " . $conexion->error);
+    }
+
     $stmt->bind_param($types, ...$params);
     $stmt->execute();
     $resultado = $stmt->get_result();
+
 } else {
     $resultado = $conexion->query($sql);
 }
@@ -55,55 +62,41 @@ if (!empty($params)) {
 <!DOCTYPE html>
 <html lang="eu">
 <head>
-    <meta charset="utf-8">
-    <title>Katalogoa</title>
+<meta charset="utf-8">
+<title>Katalogoa</title>
 
-    <link rel="stylesheet" href="CSS_Erronka.css">
-    <link rel="icon" type="image/png" href="SECONDS AGO LOGO.png">
+<link rel="stylesheet" href="CSS_Erronka.css">
+<link rel="icon" type="image/png" href="SECONDS AGO LOGO.png">
 
-    <link rel="stylesheet" href="img/slider-argazkiak/slick.css">
-    <link rel="stylesheet" href="img/slider-argazkiak/slick-theme.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+<script>
+$(document).ready(function(){
+
+    $(".erosi").click(function(){
+        let zenbakia = parseInt($("#saskia").text()) || 0;
+        $("#saskia").text(zenbakia + 1);
+    });
+
+    $(".produktuak").hover(
+        function(){ $(this).css("border","3px solid white"); },
+        function(){ $(this).css("border","2px solid transparent"); }
+    );
+
+});
+</script>
+
 </head>
 
 <body>
 
 <header>
-    <?php include_once "navbar.php"; ?>
+<?php include_once "navbar.php"; ?>
 </header>
 
-<script>
-$(document).ready(function(){
-    $(".slider").slick({
-        centerMode: true,
-        centerPadding: "60px",
-        slidesToShow: 3,
-        responsive: [
-            { breakpoint: 768, settings: { arrows: false, centerMode: true, centerPadding: "40px", slidesToShow: 3 }},
-            { breakpoint: 480, settings: { arrows: false, centerMode: true, centerPadding: "40px", slidesToShow: 1 }}
-        ]
-    });
-
-    $(".erosi").click(function(){
-        let zenbakia = parseInt($("#saskia").text());
-        $("#saskia").text(zenbakia + 1);
-    });
-
-    $(".produktuak").hover(
-        function() { $(this).css("border", "3px solid white"); },
-        function() { $(this).css("border", "2px solid transparent"); }
-    );
-});
-</script>
-
-<!-- SLIDER -->
-<div class="slider">
-    <img src="img/slider-argazkiak/1.jpg">
-    <img src="img/slider-argazkiak/2.jpg">
-    <img src="img/slider-argazkiak/3.jpg">
-    <img src="img/slider-argazkiak/4.webp">
+<!-- IMAGEN GRANDE -->
+<div style="width:100%; overflow:hidden;">
+    <img src="img/slider-argazkiak/1.jpg" style="width:100%; max-height:400px; object-fit:cover;">
 </div>
 
 <!-- FILTRO -->
@@ -122,8 +115,10 @@ $(document).ready(function(){
 
 <!-- PRODUKTUAK -->
 <figure>
+
 <?php
 if ($resultado && $resultado->num_rows > 0) {
+
     while ($producto = $resultado->fetch_assoc()) {
 
         $izena   = htmlspecialchars($producto['izena'], ENT_QUOTES, 'UTF-8');
@@ -136,7 +131,7 @@ if ($resultado && $resultado->num_rows > 0) {
 
         echo '<div class="div1">';
         echo   '<img class="produktuak" src="'.$img.'" alt="'.$izena.'">';
-        echo   '<produktutextua>'.$izena.' - '.$prezioa.' €</produktutextua>';
+        echo   '<p class="produktutextua">'.$izena.' - '.$prezioa.' €</p>';
         echo   '<div class="button">';
         echo     '<form method="POST">';
         echo       '<input type="hidden" name="produktua_id" value="'.$id.'">';
@@ -145,27 +140,34 @@ if ($resultado && $resultado->num_rows > 0) {
         echo   '</div>';
         echo '</div>';
     }
+
 } else {
     echo "<p>Ez daude produktuak.</p>";
 }
+
+if (isset($stmt)) {
+    $stmt->close();
+}
 ?>
+
 </figure>
 
 <footer>
-    <h3>ENPRESA KOLABORATIBOAK</h3>
-    <div class="sarrera-grid">
-        <img class="logo-empresa" src="https://upload.wikimedia.org/wikipedia/commons/8/82/Dell_Logo.png">
-        <img class="logo-empresa" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Lenovo_Global_Corporate_Logo.png/960px-Lenovo_Global_Corporate_Logo.png">
-        <img class="logo-empresa" src="img/Apple logo.png">
-        <img class="logo-empresa" src="img/Microsoft logo.png">
-        <img class="logo-empresa" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Fujitsu-Logo.svg/1024px-Fujitsu-Logo.svg.png">
-        <img class="logo-empresa" src="https://images.icon-icons.com/2699/PNG/512/acer_logo_icon_169649.png">
-        <img class="logo-empresa" src="img/ASUS logo.png">
-        <img class="logo-empresa" src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Ingram_logo.jpg/1200px-Ingram_logo.jpg">
-        <img class="logo-empresa" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/IBM_logo.svg/960px-IBM_logo.svg.png">
-        <img class="logo-empresa" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Intel_logo_2023.svg/2560px-Intel_logo_2023.svg.png">
-    </div>
+<h3>ENPRESA KOLABORATIBOAK</h3>
+<div class="sarrera-grid">
+<img class="logo-empresa" src="https://upload.wikimedia.org/wikipedia/commons/8/82/Dell_Logo.png">
+<img class="logo-empresa" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Lenovo_Global_Corporate_Logo.png/960px-Lenovo_Global_Corporate_Logo.png">
+<img class="logo-empresa" src="img/Apple logo.png">
+<img class="logo-empresa" src="img/Microsoft logo.png">
+<img class="logo-empresa" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Fujitsu-Logo.svg/1024px-Fujitsu-Logo.svg.png">
+<img class="logo-empresa" src="https://images.icon-icons.com/2699/PNG/512/acer_logo_icon_169649.png">
+<img class="logo-empresa" src="img/ASUS logo.png">
+<img class="logo-empresa" src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Ingram_logo.jpg/1200px-Ingram_logo.jpg">
+<img class="logo-empresa" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/IBM_logo.svg/960px-IBM_logo.svg.png">
+<img class="logo-empresa" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Intel_logo_2023.svg/2560px-Intel_logo_2023.svg.png">
+</div>
 </footer>
 
 </body>
 </html>
+

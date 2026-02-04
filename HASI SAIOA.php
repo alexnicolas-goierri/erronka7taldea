@@ -27,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($pasahitza === $user["pass"]) {
             $_SESSION["user_id"] = $user["id"];
 
-            header("Location: katalogoa.php");
+            header("Location: SARRERA.php");
             exit;
         } else {
             $mensaje = "Pasahitza okerra.";
@@ -52,7 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </header>
 
 <main>
-   
+    <h2>Login Erabiltzaileak</h2>
 
     <?php if($mensaje) echo "<div class='mensaje'>$mensaje</div>"; ?>
 
