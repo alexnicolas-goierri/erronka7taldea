@@ -78,10 +78,21 @@ if (!empty($params)) {
 <link rel="stylesheet" href="CSS_Erronka.css">
 <link rel="icon" type="image/png" href="SECONDS AGO LOGO.png">
 
+<link rel="stylesheet" href="img/slider-argazkiak/slick.css">
+    <link rel="stylesheet" href="img/slider-argazkiak/slick-theme.css">
+ 
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
 
 <script>
 $(document).ready(function(){
+
+$('.slider').slick({
+        slidesToShow: 3,
+        slidesToScroll: 1,
+        autoplay: true,
+    });
 
     $(".produktuak").hover(
         function(){ $(this).css("border","3px solid white"); },
@@ -99,9 +110,11 @@ $(document).ready(function(){
 <?php include_once "navbar.php"; ?>
 </header>
 
-<!-- IMAGEN GRANDE -->
-<div style="width:100%; overflow:hidden;">
-    <img src="img/slider-argazkiak/1.jpg" style="width:100%; max-height:400px; object-fit:cover;">
+<div class="slider">
+    <img src="img/slider-argazkiak/1.jpg">
+    <img src="img/slider-argazkiak/2.jpg">
+    <img src="img/slider-argazkiak/3.jpg">
+    <img src="img/slider-argazkiak/4.webp">
 </div>
 
 <!-- FILTRO -->
